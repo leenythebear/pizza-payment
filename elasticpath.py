@@ -108,7 +108,33 @@ def add_products(token):
         image_id = (load_file(token, image_url)).json().get('data').get('id')
 
         add_file_to_product(token, product_id, image_id)
-        return response
+
+
+def add_pizzeria_address(token, slug='pizzeri-aaddresses'):
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
+    }
+    with open("addresses.json", "r") as my_file:
+        addresses_json = my_file.read()
+
+    addresses = json.loads(addresses_json)
+    for address in addresses:
+        json_data = {
+            'data': {
+                'type': 'entry',
+                'address': address['address']['full'],
+                'alias': address['alias'],
+                'longitude': float(address['coordinates']['lon']),
+                'latitude': float(address['coordinates']['lat'])
+            }
+        }
+        response = requests.post(
+            f'https://useast.api.elasticpath.com/v2/flows/{slug}/entries',
+            headers=headers,
+            json=json_data
+        )
+        response.raise_for_status()
 
 
 def create_flow(token):
@@ -172,6 +198,8 @@ if __name__ == "__main__":
 
     db = get_database_connection(db_host, db_port, db_password)
     token = get_token(client_id, client_secret, db)
+    # add_products(token)
+    add_pizzeria_address(token)
     # flow_id = create_flow(token)
-    print(777, create_field(token, '41bb069c-534b-4bb8-aa20-576c023aa189', 'Latitude', 'float'))
+    # create_field(token, '41bb069c-534b-4bb8-aa20-576c023aa189', 'Latitude', 'float')
 
