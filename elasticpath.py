@@ -26,17 +26,13 @@ db_password = os.environ["DATABASE_PASSWORD"]
 def get_token(client_id, client_secret, db):
     access_token = db.get('access_token')
     if not access_token:
-        # token_url = "https://api.moltin.com/oauth/access_token"
         token_url = "https://useast.api.elasticpath.com/oauth/access_token"
         data = {
             "client_id": client_id,
             "client_secret": client_secret,
-            "grant_type": "client_credentials",
-            # "grant_type": "implicit",
+            "grant_type": "client_credentials"
         }
-        print(222, client_id)
         response = requests.post(token_url, data=data)
-        print(111, response.json())
         response.raise_for_status()
         token_info = response.json()
         time_to_expire = token_info['expires_in']
@@ -57,4 +53,4 @@ def get_database_connection(host, port, password):
 if __name__ == "__main__":
     db = get_database_connection(db_host, db_port, db_password)
     token = get_token(client_id, client_secret, db)
-    print(111, token)
+    response = add_products(token)
