@@ -111,6 +111,55 @@ def add_products(token):
         return response
 
 
+def create_flow(token):
+    headers = {
+    "Authorization": "Bearer {}".format(token),
+    "Content-Type": "application/json",
+    }
+    json_data = {
+        'data': {
+            'type': 'flow',
+            'name': 'Pizzeria_addresses',
+            'slug': 'pizzeri-aaddresses',
+            'description': 'Pizzeria addresses',
+            'enabled': True,
+        },
+    }
+    response = requests.post('https://useast.api.elasticpath.com/v2/flows', headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json()
+
+
+def create_field(token, flow_id, field_name, field_type):
+    url = 'https://useast.api.elasticpath.com/v2/fields'
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    data = {
+        "data": {
+            "type": "field",
+            "name": field_name,
+            "slug": slugify(field_name),
+            "field_type": field_type,
+            "description": field_name,
+            "required": True,
+            "enabled": True,
+            "omit_null": False,
+            "relationships": {
+                "flow": {
+                    "data": {
+                        "type": "flow",
+                        "id": flow_id
+                    }
+                }
+            }
+        }
+    }
+    response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()
+    return response.json()
+
+
 if __name__ == "__main__":
     load_dotenv()
 
@@ -123,4 +172,6 @@ if __name__ == "__main__":
 
     db = get_database_connection(db_host, db_port, db_password)
     token = get_token(client_id, client_secret, db)
-    response = add_products(token)
+    # flow_id = create_flow(token)
+    print(777, create_field(token, '41bb069c-534b-4bb8-aa20-576c023aa189', 'Latitude', 'float'))
+
