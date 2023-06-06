@@ -1,16 +1,11 @@
 import json
 import os
+from slugify import slugify
 
 import redis
 from dotenv import load_dotenv
 
 import requests
-
-with open("addresses.json", "r") as my_file:
-    addresses_json = my_file.read()
-
-addresses = json.loads(addresses_json)
-# print(addresses)
 
 _database = None
 
@@ -48,6 +43,80 @@ def get_database_connection(host, port, password):
     if _database is None:
         _database = redis.Redis(host=host, port=port, password=password)
     return _database
+
+
+def load_file(token, image_url):
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    url = 'https://useast.api.elasticpath.com/v2/files'
+    files = {
+        'file_location': (None, image_url)
+    }
+    load_file_response = requests.post(url, headers=headers, files=files)
+    load_file_response.raise_for_status()
+    return load_file_response
+
+
+def add_file_to_product(token, product_id, image_id):
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
+    }
+    json_data = {
+        'data': {
+            'type': 'file',
+            'id': image_id,
+        },
+    }
+    url = f'https://useast.api.elasticpath.com/pcm/products/{product_id}/relationships/main_image'
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+
+
+def add_products(token):
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
+    }
+    with open("menu.json", "r") as my_file:
+        menu_json = my_file.read()
+
+    products = json.loads(menu_json)
+    for product in products:
+        json_data = {
+            'data': {
+                'type': 'product',
+                'attributes': {
+                    'name': product['name'],
+                    'slug': slugify(product['name']),
+                    'sku': slugify(product['name']),
+                    'description': product['description'],
+                    'manage_stock': False,
+                    'price': [
+                        {
+                            'amount': product['price'],
+                            'currency': 'RUB',
+                            'includes_tax': True,
+                        },
+                    ],
+                    'status': 'live',
+                    'commodity_type': 'physical',
+                },
+            }
+        }
+        response = requests.post(
+            'https://useast.api.elasticpath.com/pcm/products',
+            headers=headers,
+            json=json_data
+        )
+        response.raise_for_status()
+        image_url = product['product_image']['url']
+        product_id = response.json().get('data').get('id')
+        image_id = (load_file(token, image_url)).json().get('data').get('id')
+
+        add_file_to_product(token, product_id, image_id)
+        return response
 
 
 if __name__ == "__main__":
