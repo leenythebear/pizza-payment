@@ -9,14 +9,6 @@ import requests
 
 _database = None
 
-load_dotenv()
-client_id = os.getenv('CLIENT_ID')
-client_secret = os.getenv('CLIENT_SECRET')
-
-db_host = os.environ["DATABASE_HOST"]
-db_port = os.environ["DATABASE_PORT"]
-db_password = os.environ["DATABASE_PASSWORD"]
-
 
 def get_token(client_id, client_secret, db):
     access_token = db.get('access_token')
@@ -120,6 +112,15 @@ def add_products(token):
 
 
 if __name__ == "__main__":
+    load_dotenv()
+
+    client_id = os.getenv('CLIENT_ID')
+    client_secret = os.getenv('CLIENT_SECRET')
+
+    db_host = os.environ["DATABASE_HOST"]
+    db_port = os.environ["DATABASE_PORT"]
+    db_password = os.environ["DATABASE_PASSWORD"]
+
     db = get_database_connection(db_host, db_port, db_password)
     token = get_token(client_id, client_secret, db)
     response = add_products(token)
