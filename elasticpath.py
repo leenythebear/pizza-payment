@@ -37,6 +37,30 @@ def get_database_connection(host, port, password):
     return _database
 
 
+def get_products(token):
+    products_url = "https://useast.api.elasticpath.com/pcm/products"
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    response = requests.get(products_url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+
+def get_product_by_id(product_id, token):
+    headers = {
+        "Authorization": f"Bearer {token}",
+    }
+
+    response = requests.get(
+        f"https://useast.api.elasticpath.com/catalog/products/{product_id}",
+        headers=headers,
+    )
+    response.raise_for_status()
+
+    return response.json()["data"]
+
+
 def load_file(token, image_url):
     headers = {
         "Authorization": "Bearer {}".format(token),
