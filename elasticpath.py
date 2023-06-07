@@ -223,8 +223,8 @@ def add_pizzeria_address(token, slug='pizzeri-aaddresses'):
 
 def create_flow(token):
     headers = {
-    "Authorization": "Bearer {}".format(token),
-    "Content-Type": "application/json",
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
     }
     json_data = {
         'data': {
