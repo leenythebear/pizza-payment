@@ -90,6 +90,69 @@ def add_file_to_product(token, product_id, image_id):
     response.raise_for_status()
 
 
+def add_pricebook(token):
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
+    }
+    json_data = {
+        'data': {
+            'type': 'pricebook',
+            'attributes': {
+                'name': 'PIzzas',
+                'description': 'Prices for pizza',
+            },
+        },
+    }
+    response = requests.post('https://useast.api.elasticpath.com/pcm/pricebooks', headers=headers, json=json_data)
+    response.raise_for_status()
+    return response.json().get('data').get('id')
+
+
+def create_currency(token):
+    url = 'https://useast.api.elasticpath.com/v2/currencies'
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    json_data = {
+        'data': {
+            'type': 'currency',
+            'code': 'RUB',
+            'exchange_rate': 1,
+            'format': '{price} РУБ',
+            'decimal_point': '.',
+            'thousand_separator': ',',
+            'decimal_places': 2,
+            'default': True,
+            'enabled': True
+        }
+    }
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+
+
+def add_price_for_product(token, pricebook_id, product_sku, product_price):
+    url = f'https://useast.api.elasticpath.com/pcm/pricebooks/{pricebook_id}/prices'
+    headers = {"Authorization": "Bearer {}".format(token)}
+    json_data = {
+        'data': {
+            'type': 'product-price',
+            'attributes': {
+                'currencies': {
+                    'RUB': {
+                        'amount': product_price * 100,
+                        'includes_tax': False
+                    },
+                },
+                'sku': product_sku
+            }
+        }
+    }
+    response = requests.post(url, headers=headers, json=json_data)
+    # print(111, response.json(), product_sku)
+    response.raise_for_status()
+
+
 def add_products(token):
     headers = {
         "Authorization": "Bearer {}".format(token),
