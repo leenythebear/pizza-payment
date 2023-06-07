@@ -172,13 +172,6 @@ def add_products(token):
                     'sku': slugify(product['name']),
                     'description': product['description'],
                     'manage_stock': False,
-                    'price': [
-                        {
-                            'amount': product['price'],
-                            'currency': 'RUB',
-                            'includes_tax': True,
-                        },
-                    ],
                     'status': 'live',
                     'commodity_type': 'physical',
                 },
@@ -190,11 +183,15 @@ def add_products(token):
             json=json_data
         )
         response.raise_for_status()
+
         image_url = product['product_image']['url']
         product_id = response.json().get('data').get('id')
         image_id = (load_file(token, image_url)).json().get('data').get('id')
-
         add_file_to_product(token, product_id, image_id)
+
+        product_sku = response.json().get('data').get('attributes').get('sku')
+        product_price = product['price']
+        add_price_for_product(token, '7526b695-aade-4906-a2ca-7c304eb900fc', product_sku, product_price)
 
 
 def add_pizzeria_address(token, slug='pizzeri-aaddresses'):
