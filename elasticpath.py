@@ -61,6 +61,101 @@ def get_product_by_id(product_id, token):
     return response.json()["data"]
 
 
+def get_product_image(token, image_id):
+    headers = {
+        "Authorization": f"Bearer {token}",
+    }
+    response = requests.get(
+        f"https://useast.api.elasticpath.com/v2/files/{image_id}", headers=headers
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def create_cart(token):
+    carts_url = "https://useast.api.elasticpath.com/v2/carts"
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
+    }
+    data = {
+        "data": {
+            "name": "test",
+        }
+    }
+    response = requests.post(carts_url, headers=headers, json=data)
+    response.raise_for_status()
+    return response.json()["data"]["id"]
+
+
+def add_product_to_cart(cart_id, token, product):
+    cart_url = f"https://useast.api.elasticpath.com/v2/carts/{cart_id}/items/"
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
+    }
+    data = {
+        "data": {
+            "id": product,
+            "type": "cart_item",
+            "quantity": 1,
+        }
+    }
+    response = requests.post(cart_url, headers=headers, json=data)
+    print(777, response.json())
+    response.raise_for_status()
+    return response.json()
+
+
+def get_cart(token, chat_id):
+    cart_url = f"https://useast.api.elasticpath.com/v2/carts/{chat_id}/items"
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    response = requests.get(cart_url, headers=headers)
+    response.raise_for_status()
+    return response.json()["data"]
+
+
+def delete_product_from_cart(token, product_id, chat_id):
+    url = f"https://useast.api.elasticpath.com/v2/carts/{chat_id}/items/{product_id}"
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    response = requests.delete(url, headers=headers)
+    response.raise_for_status()
+
+
+def get_carts_sum(token, chat_id):
+    carts_sum_url = f"https://useast.api.elasticpath.com/v2/carts/{chat_id}"
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    response = requests.get(carts_sum_url, headers=headers)
+    response.raise_for_status()
+    return response.json()["data"]["meta"]["display_price"]["with_tax"][
+        "formatted"
+    ]
+
+
+def create_customer(token, email, chat_id):
+    url = f"https://useast.api.elasticpath.com/v2/customers"
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
+    }
+    json_data = {
+        "data": {
+            "type": "customer",
+            "name": str(chat_id),
+            "email": email,
+            "password": "",
+        },
+    }
+    response = requests.post(url, headers=headers, json=json_data)
+    response.raise_for_status()
+
+
 def load_file(token, image_url):
     headers = {
         "Authorization": "Bearer {}".format(token),
