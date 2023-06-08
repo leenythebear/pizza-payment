@@ -102,7 +102,6 @@ def add_product_to_cart(cart_id, token, product):
         }
     }
     response = requests.post(cart_url, headers=headers, json=data)
-    print(777, response.json())
     response.raise_for_status()
     return response.json()
 
@@ -244,7 +243,6 @@ def add_price_for_product(token, pricebook_id, product_sku, product_price):
         }
     }
     response = requests.post(url, headers=headers, json=json_data)
-    # print(111, response.json(), product_sku)
     response.raise_for_status()
 
 
@@ -377,8 +375,3 @@ if __name__ == "__main__":
 
     db = get_database_connection(db_host, db_port, db_password)
     token = get_token(client_id, client_secret, db)
-    # add_products(token)
-    add_pizzeria_address(token)
-    # flow_id = create_flow(token)
-    # create_field(token, '41bb069c-534b-4bb8-aa20-576c023aa189', 'Latitude', 'float')
-
