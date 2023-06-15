@@ -31,10 +31,10 @@ def get_coordinates(api_key, address):
         coords = None
 
     if coords is None:
-        lon, lat = None, None
+        return None
     else:
         lon, lat = coords
-    return lat, lon
+        return lat, lon
 
 
 def get_distance(customer_coordinates, restaurant_coordinates):
