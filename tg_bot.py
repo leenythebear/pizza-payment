@@ -21,7 +21,10 @@ from elasticpath import (
     get_carts_sum,
     delete_product_from_cart,
     create_customer,
+    get_all_pizzerias,
 )
+
+from geocoder import get_coordinates, get_distance
 
 _database = None
 
@@ -231,17 +234,58 @@ def waiting_email(bot, update, token):
 def handle_waiting(bot, update, api_key, token):
     chat_id = update.message.chat_id
     if update.message.location:
-        user_pos = (update.message.location.latitude, update.message.location.longitude)
+        coordinates = (update.message.location.latitude, update.message.location.longitude)
     elif update.message.text:
         user_pos = update.message.text
-    update.effective_message.reply_text(text=user_pos)
-    return "START"
+        coordinates = get_coordinates(api_key, user_pos)
+    if not coordinates:
+        text = 'Не могу распознать этот адрес!'
+        update.effective_message.reply_text(text=text)
+        return "WAITING_LOCATION"
+    distances = {}
+    all_pizzerias = get_all_pizzerias(token)
+    for pizzeria in all_pizzerias['data']:
+        pizzeria_coords = (pizzeria['latitude'], pizzeria['longitude'])
+        distance_to_pizzeria = get_distance(coordinates, pizzeria_coords)
+        distances[distance_to_pizzeria] = (pizzeria['address'], pizzeria['id'])
+    min_distance = min(distances.items(), key=lambda x: x[0])
+
+    keyboard = [
+        [InlineKeyboardButton("Доставка", callback_data=f"delivery {min_distance[1][1]}")],
+        [InlineKeyboardButton("Самовывоз", callback_data=f"pickup {min_distance[1][1]}")]
+    ]
+    if min_distance[0] > 20.0:
+        text = dedent(f"""\
+        Простите, но так далеко мы пиццу не доставим.
+        Ближайшая пиццерия аж в {min_distance[0]} километрах от Вас.
+        Вы можете забрать Вашу пиццу по адресу: {min_distance[1][0]}
+        """)
+        _ = keyboard.pop(0)
+
+    elif 5 < min_distance[0] <= 20:
+        text = "Стоимость доставки к Вам составит 300 рублей"
+
+    elif min_distance[0] <= 5:
+        text = "Стоимость доставки к Вам составит 100 рублей"
+    else:
+        text = dedent(f"""\
+        Может заберёте пиццу из нашей пиццерии неподалёку? 
+        Она всего в {min_distance[0]} километрах от Вас!
+        Вот её адрес: {min_distance[1][0]}
+        А можем и бесплатно доставить, нам не сложно 😊
+        """)
+
+    reply_markup = InlineKeyboardMarkup(keyboard, n_cols=2)
+    bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
+    return "WAITING_PIZZA"
+
+
+def handle_delivery(bot, update, token):
+    query = update.callback_query
+    print(777, query)
 
 
 def get_database_connection(host, port, password):
-    """
-    Возвращает конекшн с базой данных Redis, либо создаёт новый, если он ещё не создан.
-    """
     global _database
     if _database is None:
         _database = redis.Redis(host=host, port=port, password=password)
@@ -276,7 +320,8 @@ def handle_users_reply(
         ),
         "HANDLE_CART": functools.partial(handle_cart, token=token),
         "WAITING_EMAIL": functools.partial(waiting_email, token=token),
-        "WAITING_LOCATION": waiting_location,
+        "WAITING_LOCATION": functools.partial(handle_waiting, api_key=yandex_api_key, token=token),
+        "WAITING_PIZZA": functools.partial(handle_delivery, token=token)
     }
     state_handler = states_functions[user_state]
     try:
@@ -295,6 +340,8 @@ if __name__ == "__main__":
     db_host = os.environ["DATABASE_HOST"]
     db_port = os.environ["DATABASE_PORT"]
     db_password = os.environ["DATABASE_PASSWORD"]
+
+    yandex_api_key = os.getenv("YANDEX_API_KEY")
 
     partial_handle_users_reply = functools.partial(
         handle_users_reply,
