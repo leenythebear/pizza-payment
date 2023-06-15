@@ -23,10 +23,12 @@ def get_token(client_id: str, client_secret: str, db: redis.Redis) -> str:
         response.raise_for_status()
         token_info = response.json()
         time_to_expire = token_info['expires_in']
+
         access_token = token_info['access_token']
         db.set('access_token', access_token, ex=time_to_expire)
     else:
         access_token = access_token.decode()
+
     return access_token
 
 
@@ -359,6 +361,17 @@ def create_field(token, flow_id, field_name, field_type):
         }
     }
     response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()
+    return response.json()
+
+
+def get_all_pizzerias(token, slug='pizzeri-aaddresses'):
+    url = f'https://useast.api.elasticpath.com/v2/flows/{slug}/entries?page[limit]=100'
+
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    response = requests.get(url, headers=headers)
     response.raise_for_status()
     return response.json()
 
