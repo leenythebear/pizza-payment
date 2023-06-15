@@ -10,7 +10,7 @@ import requests
 _database = None
 
 
-def get_token(client_id, client_secret, db):
+def get_token(client_id: str, client_secret: str, db: redis.Redis) -> str:
     access_token = db.get('access_token')
     if not access_token:
         token_url = "https://useast.api.elasticpath.com/oauth/access_token"
