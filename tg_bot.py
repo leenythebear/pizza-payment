@@ -228,7 +228,8 @@ def waiting_email(bot, update, token):
         return "WAITING_EMAIL"
 
 
-def waiting_location(bot, update):
+def handle_waiting(bot, update, api_key, token):
+    chat_id = update.message.chat_id
     if update.message.location:
         user_pos = (update.message.location.latitude, update.message.location.longitude)
     elif update.message.text:
