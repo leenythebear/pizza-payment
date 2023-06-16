@@ -316,7 +316,31 @@ def add_pizzeria_address(token, slug='pizzeri-aaddresses'):
         response.raise_for_status()
 
 
-def create_flow(token):
+def add_customer_address(token, customer_id, longitude, latitude, slug='customer-address'):
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+        "Content-Type": "application/json",
+    }
+    print(111, customer_id)
+    json_data = {
+        'data': {
+            'type': 'entry',
+            'customer-id': str(customer_id),
+            'longitude': float(longitude),
+            'latitude': float(latitude)
+        }
+    }
+
+    response = requests.post(
+        f'https://useast.api.elasticpath.com/v2/flows/{slug}/entries',
+        headers=headers,
+        json=json_data
+    )
+    print(666, response.json())
+    response.raise_for_status()
+
+
+def create_flow(token, name, description):
     headers = {
         "Authorization": "Bearer {}".format(token),
         "Content-Type": "application/json",
