@@ -348,9 +348,9 @@ def create_flow(token, name, description):
     json_data = {
         'data': {
             'type': 'flow',
-            'name': 'Pizzeria_addresses',
-            'slug': 'pizzeri-aaddresses',
-            'description': 'Pizzeria addresses',
+            'name': name,
+            'slug': slugify(name),
+            'description': description,
             'enabled': True,
         },
     }
