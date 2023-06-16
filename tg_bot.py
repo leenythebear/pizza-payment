@@ -171,18 +171,19 @@ def handle_cart(bot, update, token):
         message = ""
         for product in products_cart:
             cart_description = f"""\
-                                    {product["name"]}
-                                    {product["description"]} 
-                                    {product["unit_price"]["amount"]} per kg 
-                                    {product["quantity"]} kg in cart for ${product["value"]["amount"]}
-                                    ______________________________
+                                   {product["name"]}
+                                   {product["description"]} 
 
+                                   {product["quantity"]} шт.  
+                                   Цена за штуку: {product["meta"]["display_price"]["without_tax"]["unit"]["formatted"]}
+                                   ______________________________
+                                    
                                     """
             message += dedent(cart_description)
         sum_message = f"""\
-                                    Total: {carts_sum}
-
-                                """
+                            Итого к оплате: {carts_sum}
+                                
+                        """
         message += dedent(sum_message)
         keyboard = [
             [
