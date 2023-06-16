@@ -253,15 +253,19 @@ def handle_waiting(bot, update, api_key, token):
         distances[distance_to_pizzeria] = (pizzeria['address'], pizzeria['id'])
     min_distance = min(distances.items(), key=lambda x: x[0])
 
+    distance_to_pizzeria = min_distance[0]
+    pizzeria_address = min_distance[1][0]
+    pizzeria_id = min_distance[1][1]
+
     keyboard = [
-        [InlineKeyboardButton("Доставка", callback_data=f"delivery {min_distance[1][1]}")],
-        [InlineKeyboardButton("Самовывоз", callback_data=f"pickup {min_distance[1][1]}")]
+        [InlineKeyboardButton("Доставка", callback_data=f"delivery {pizzeria_id}")],
+        [InlineKeyboardButton("Самовывоз", callback_data=f"pickup {pizzeria_id}")]
     ]
     if min_distance[0] > 20.0:
         text = dedent(f"""\
         Простите, но так далеко мы пиццу не доставим.
-        Ближайшая пиццерия аж в {min_distance[0]} километрах от Вас.
-        Вы можете забрать Вашу пиццу по адресу: {min_distance[1][0]}
+        Ближайшая пиццерия аж в {distance_to_pizzeria} километрах от Вас.
+        Вы можете забрать Вашу пиццу по адресу: {pizzeria_address}
         """)
         _ = keyboard.pop(0)
 
@@ -273,8 +277,8 @@ def handle_waiting(bot, update, api_key, token):
     else:
         text = dedent(f"""\
         Может заберёте пиццу из нашей пиццерии неподалёку? 
-        Она всего в {min_distance[0]} километрах от Вас!
-        Вот её адрес: {min_distance[1][0]}
+        Она всего в {distance_to_pizzeria} километрах от Вас!
+        Вот её адрес: {pizzeria_address}
         А можем и бесплатно доставить, нам не сложно 😊
         """)
 
