@@ -21,7 +21,7 @@ from elasticpath import (
     get_carts_sum,
     delete_product_from_cart,
     create_customer,
-    get_all_pizzerias,
+    get_all_pizzerias, add_customer_address, get_pizzeria_by_id,
 )
 
 from geocoder import get_coordinates, get_distance
@@ -242,6 +242,8 @@ def handle_waiting(bot, update, api_key, token):
         text = 'Не могу распознать этот адрес!'
         update.effective_message.reply_text(text=text)
         return "WAITING_LOCATION"
+    latitude, longitude = coordinates
+    customer = add_customer_address(token, chat_id, latitude, longitude)
     distances = {}
     all_pizzerias = get_all_pizzerias(token)
     for pizzeria in all_pizzerias['data']:
