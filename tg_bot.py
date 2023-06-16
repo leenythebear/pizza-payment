@@ -289,7 +289,36 @@ def handle_waiting(bot, update, api_key, token):
 
 def handle_delivery(bot, update, token):
     query = update.callback_query
-    print(777, query)
+    customer_chat_id = query["message"]["chat"]["id"]
+    order = get_cart(token, customer_chat_id)
+    carts_sum = get_carts_sum(token, customer_chat_id)
+    order_type, pizzeria_id = update.callback_query['data'].split(' ')
+    if order_type == 'delivery':
+        pizzeria = get_pizzeria_by_id(token, pizzeria_id=pizzeria_id)
+
+        courier_telegram_id = pizzeria.get('data').get('courier-telegram-id')
+        longitude = pizzeria.get('data').get('longitude')
+        latitude = pizzeria.get('data').get('latitude')
+
+        message = ''
+        for product in order:
+            cart_description = f"""\
+                                   {product["name"]}
+                                   {product["description"]} 
+
+                                   {product["quantity"]} шт.  
+                                   Цена за штуку: {product["meta"]["display_price"]["without_tax"]["unit"]["formatted"]}
+                                   ______________________________
+                                    
+                                    """
+            message += dedent(cart_description)
+        sum_message = f"""\
+                            Итого к оплате: {carts_sum}
+                                
+                        """
+        message += dedent(sum_message)
+        bot.send_message(chat_id=courier_telegram_id, text=message)
+        bot.send_location(chat_id=courier_telegram_id, latitude=latitude, longitude=longitude)
 
 
 def get_database_connection(host, port, password):
