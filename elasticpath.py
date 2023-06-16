@@ -400,6 +400,16 @@ def get_all_pizzerias(token, slug='pizzeri-aaddresses'):
     return response.json()
 
 
+def get_pizzeria_by_id(token, pizzeria_id, slug='pizzeri-aaddresses'):
+    url = f"https://useast.api.elasticpath.com/v2/flows/{slug}/entries/{pizzeria_id}"
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+
 if __name__ == "__main__":
     load_dotenv()
 
