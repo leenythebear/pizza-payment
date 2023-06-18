@@ -335,8 +335,8 @@ def add_customer_address(token, customer_id, latitude, longitude, slug='customer
         headers=headers,
         json=json_data
     )
-    print(666, response.json())
     response.raise_for_status()
+    return response.json()
 
 
 def create_flow(token, name, description):
