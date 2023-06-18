@@ -316,7 +316,7 @@ def add_pizzeria_address(token, slug='pizzeri-aaddresses'):
         response.raise_for_status()
 
 
-def add_customer_address(token, customer_id, longitude, latitude, slug='customer-address'):
+def add_customer_address(token, customer_id, latitude, longitude, slug='customer-address'):
     headers = {
         "Authorization": "Bearer {}".format(token),
         "Content-Type": "application/json",
