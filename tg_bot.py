@@ -268,7 +268,6 @@ def handle_waiting(bot, update, api_key, token, db):
         text = dedent(f"""\
         Простите, но так далеко мы пиццу не доставим.
         Ближайшая пиццерия аж в {distance_to_pizzeria} километрах от Вас.
-        Вы можете забрать Вашу пиццу по адресу: {pizzeria_address}
         """)
         _ = keyboard.pop(0)
 
@@ -306,8 +305,10 @@ def handle_delivery(bot, update, token, db):
     customer_address = get_entries_by_id(token, entry_id=customer_address_id, flow_slug='customer-address')
 
     if order_type == 'delivery':
-        pizzeria = get_pizzeria_by_id(token, pizzeria_id=pizzeria_id)
-
+        bot.answer_callback_query(
+            callback_query_id=query.id,
+            text="Ваш заказ принят! Ожидайте доставку!",
+            show_alert=False)
         courier_telegram_id = pizzeria.get('data').get('courier-telegram-id')
         longitude = pizzeria.get('data').get('longitude')
         latitude = pizzeria.get('data').get('latitude')
@@ -331,6 +332,9 @@ def handle_delivery(bot, update, token, db):
         message += dedent(sum_message)
         bot.send_message(chat_id=courier_telegram_id, text=message)
         bot.send_location(chat_id=courier_telegram_id, latitude=latitude, longitude=longitude)
+    else:
+        message = f"Вы можете забрать свой заказ по адресу: {pizzeria.get('data').get('address')}"
+        bot.send_message(chat_id=customer_chat_id, text=message)
 
 
 def get_database_connection(host, port, password):
