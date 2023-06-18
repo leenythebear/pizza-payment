@@ -232,7 +232,7 @@ def waiting_email(bot, update, token):
         return "WAITING_EMAIL"
 
 
-def handle_waiting(bot, update, api_key, token):
+def handle_waiting(bot, update, api_key, token, db):
     chat_id = update.message.chat_id
     if update.message.location:
         coordinates = (update.message.location.latitude, update.message.location.longitude)
@@ -256,6 +256,8 @@ def handle_waiting(bot, update, api_key, token):
     distance_to_pizzeria = min_distance[0]
     pizzeria_address = min_distance[1][0]
     pizzeria_id = min_distance[1][1]
+
+    db.set(f'{chat_id}_order', f'{customer_address_id}${pizzeria_id}')
 
     keyboard = [
         [InlineKeyboardButton("Доставка", callback_data=f"delivery {pizzeria_id}")],
@@ -287,7 +289,7 @@ def handle_waiting(bot, update, api_key, token):
     return "WAITING_PIZZA"
 
 
-def handle_delivery(bot, update, token):
+def handle_delivery(bot, update, token, db):
     query = update.callback_query
     customer_chat_id = query["message"]["chat"]["id"]
     order = get_cart(token, customer_chat_id)
