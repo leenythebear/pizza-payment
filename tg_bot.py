@@ -261,8 +261,8 @@ def handle_waiting(bot, update, api_key, token, db):
     db.set(f'{chat_id}_order', f'{customer_address_id}${pizzeria_id}')
 
     keyboard = [
-        [InlineKeyboardButton("Доставка", callback_data=f"delivery {pizzeria_id}")],
-        [InlineKeyboardButton("Самовывоз", callback_data=f"pickup {pizzeria_id}")]
+        [InlineKeyboardButton("Доставка", callback_data="delivery")],
+        [InlineKeyboardButton("Самовывоз", callback_data="pickup")]
     ]
     if min_distance[0] > 20.0:
         text = dedent(f"""\
