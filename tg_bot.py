@@ -310,8 +310,9 @@ def handle_delivery(bot, update, token, db):
             text="Ваш заказ принят! Ожидайте доставку!",
             show_alert=False)
         courier_telegram_id = pizzeria.get('data').get('courier-telegram-id')
-        longitude = pizzeria.get('data').get('longitude')
-        latitude = pizzeria.get('data').get('latitude')
+
+        longitude = customer_address.get('data').get('longitude')
+        latitude = customer_address.get('data').get('latitude')
 
         message = ''
         for product in order:
