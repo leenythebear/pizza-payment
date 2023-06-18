@@ -321,7 +321,6 @@ def add_customer_address(token, customer_id, latitude, longitude, slug='customer
         "Authorization": "Bearer {}".format(token),
         "Content-Type": "application/json",
     }
-    print(111, customer_id)
     json_data = {
         'data': {
             'type': 'entry',
