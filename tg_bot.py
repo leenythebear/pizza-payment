@@ -373,8 +373,8 @@ def handle_users_reply(
         ),
         "HANDLE_CART": functools.partial(handle_cart, token=token),
         "WAITING_EMAIL": functools.partial(waiting_email, token=token),
-        "WAITING_LOCATION": functools.partial(handle_waiting, api_key=yandex_api_key, token=token),
-        "WAITING_PIZZA": functools.partial(handle_delivery, token=token)
+        "WAITING_LOCATION": functools.partial(handle_waiting, api_key=yandex_api_key, token=token, db=db),
+        "WAITING_PIZZA": functools.partial(handle_delivery, token=token, db=db)
     }
     state_handler = states_functions[user_state]
     try:
