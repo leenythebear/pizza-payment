@@ -21,7 +21,7 @@ from elasticpath import (
     get_carts_sum,
     delete_product_from_cart,
     create_customer,
-    get_all_pizzerias, add_customer_address, get_pizzeria_by_id,
+    get_all_pizzerias, add_customer_address, get_entries_by_id,
 )
 
 from geocoder import get_coordinates, get_distance
@@ -292,7 +292,16 @@ def handle_delivery(bot, update, token):
     customer_chat_id = query["message"]["chat"]["id"]
     order = get_cart(token, customer_chat_id)
     carts_sum = get_carts_sum(token, customer_chat_id)
-    order_type, pizzeria_id = update.callback_query['data'].split(' ')
+
+    entry_ids = db.get(f'{customer_chat_id}_order').decode('utf-8')
+    customer_address_id, pizzeria_id = entry_ids.split("$")
+
+    order_type = update.callback_query['data']
+
+    pizzeria = get_entries_by_id(token, entry_id=pizzeria_id, flow_slug='pizzeri-aaddresses')
+
+    customer_address = get_entries_by_id(token, entry_id=customer_address_id, flow_slug='customer-address')
+
     if order_type == 'delivery':
         pizzeria = get_pizzeria_by_id(token, pizzeria_id=pizzeria_id)
 
