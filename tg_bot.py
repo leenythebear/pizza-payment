@@ -244,7 +244,8 @@ def handle_waiting(bot, update, api_key, token, db):
         update.effective_message.reply_text(text=text)
         return "WAITING_LOCATION"
     latitude, longitude = coordinates
-    customer = add_customer_address(token, chat_id, latitude, longitude)
+    customer_address_id = (add_customer_address(token, chat_id, latitude, longitude)).get("data").get("id")
+
     distances = {}
     all_pizzerias = get_all_pizzerias(token)
     for pizzeria in all_pizzerias['data']:
