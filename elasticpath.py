@@ -399,8 +399,8 @@ def get_all_pizzerias(token, slug='pizzeri-aaddresses'):
     return response.json()
 
 
-def get_pizzeria_by_id(token, pizzeria_id, slug='pizzeri-aaddresses'):
-    url = f"https://useast.api.elasticpath.com/v2/flows/{slug}/entries/{pizzeria_id}"
+def get_entries_by_id(token, entry_id, flow_slug):
+    url = f"https://useast.api.elasticpath.com/v2/flows/{flow_slug}/entries/{entry_id}"
     headers = {
         "Authorization": "Bearer {}".format(token),
     }
