@@ -305,10 +305,10 @@ def handle_delivery(bot, update, token, db):
     customer_address = get_entries_by_id(token, entry_id=customer_address_id, flow_slug='customer-address')
 
     if order_type == 'delivery':
-        bot.answer_callback_query(
-            callback_query_id=query.id,
-            text="Ваш заказ принят! Ожидайте доставку!",
-            show_alert=False)
+        keyboard = [[InlineKeyboardButton('Оплатить заказ', callback_data='payment')]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        bot.send_message(chat_id=customer_chat_id, text="Оплатите заказ:", reply_markup=reply_markup)
+
         courier_telegram_id = pizzeria.get('data').get('courier-telegram-id')
 
         longitude = customer_address.get('data').get('longitude')
@@ -333,8 +333,9 @@ def handle_delivery(bot, update, token, db):
         message += dedent(sum_message)
         bot.send_message(chat_id=courier_telegram_id, text=message)
         bot.send_location(chat_id=courier_telegram_id, latitude=latitude, longitude=longitude)
-    else:
-        message = f"Вы можете забрать свой заказ по адресу: {pizzeria.get('data').get('address')}"
+        return "WAITING_PAYMENT"
+    elif order_type == "pickup":
+        message = f"Вы можете забрать свой заказ по адресу: {pizzeria.get('data').get('address')}. До свидания!"
         bot.send_message(chat_id=customer_chat_id, text=message)
 
 
