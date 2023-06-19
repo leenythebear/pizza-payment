@@ -331,6 +331,7 @@ def handle_delivery(bot, update, token, db):
                                 
                         """
         message += dedent(sum_message)
+        db.json().set(f'{customer_chat_id}_menu', '$', {'menu': message, 'price': carts_sum})
         bot.send_message(chat_id=courier_telegram_id, text=message)
         bot.send_location(chat_id=courier_telegram_id, latitude=latitude, longitude=longitude)
         return "WAITING_PAYMENT"
