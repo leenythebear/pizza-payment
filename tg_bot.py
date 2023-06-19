@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 import os
 
 import redis
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, LabeledPrice
 
-from telegram.ext import Filters, Updater
+from telegram.ext import Filters, Updater, PreCheckoutQueryHandler
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler
 from validate_email import validate_email
 
@@ -338,6 +338,40 @@ def handle_delivery(bot, update, token, db):
         bot.send_message(chat_id=customer_chat_id, text=message)
 
 
+def pay_for_pizza(bot, update, provider_token, db):
+    chat_id = update.callback_query['message']['chat']['id']
+    title = "Payment Example"
+    description = "Payment Example using python-telegram-bot"
+    payload = "Custom-Payload"
+    start_parameter = "test-payment"
+    currency = 'RUB'
+    price = (db.json().get(f'{chat_id}_menu')['price']).split(' ')[0]
+    prices = [LabeledPrice('Test', int(float(price)) * 100)]
+    bot.sendInvoice(chat_id, title, description, payload, provider_token, start_parameter, currency, prices)
+
+
+def precheckout_callback(bot, update):
+    query = update.pre_checkout_query
+    if query.invoice_payload != 'Custom-Payload':
+        bot.answer_pre_checkout_query(pre_checkout_query_id=query.id, ok=False,
+                                      error_message="Something went wrong...")
+    else:
+        bot.answer_pre_checkout_query(pre_checkout_query_id=query.id, ok=True)
+
+
+def successful_payment_callback(bot, update):
+    update.message.reply_text("Thank you for your payment!")
+    return "START"
+
+
+def handle_payment(bot, update, provider_token, db):
+    query = update.callback_query['data']
+    # print(777, update.callback_query)
+    if query == 'payment':
+        pay_for_pizza(bot, update, provider_token, db)
+        print('it works!')
+
+
 def get_database_connection(host, port, password):
     global _database
     if _database is None:
@@ -346,7 +380,7 @@ def get_database_connection(host, port, password):
 
 
 def handle_users_reply(
-    bot, update, host, port, password, client_id, client_secret
+    bot, update, host, port, password, client_id, client_secret, provider_token, yandex_api_key
 ):
     db = get_database_connection(host, port, password)
     if update.message:
@@ -374,7 +408,8 @@ def handle_users_reply(
         "HANDLE_CART": functools.partial(handle_cart, token=token),
         "WAITING_EMAIL": functools.partial(waiting_email, token=token),
         "WAITING_LOCATION": functools.partial(handle_waiting, api_key=yandex_api_key, token=token, db=db),
-        "WAITING_PIZZA": functools.partial(handle_delivery, token=token, db=db)
+        "WAITING_PIZZA": functools.partial(handle_delivery, token=token, db=db),
+        "WAITING_PAYMENT": functools.partial(handle_payment, provider_token=provider_token, db=db)
     }
     state_handler = states_functions[user_state]
     try:
@@ -387,6 +422,9 @@ def handle_users_reply(
 if __name__ == "__main__":
     load_dotenv()
     token = os.getenv("TELEGRAM_TOKEN")
+
+    provider_token = os.getenv("TRANZZO_PAYMENT_TOKEN")
+
     client_id = os.environ["CLIENT_ID"]
     client_secret = os.environ["CLIENT_SECRET"]
 
@@ -403,6 +441,9 @@ if __name__ == "__main__":
         password=db_password,
         client_id=client_id,
         client_secret=client_secret,
+        provider_token=provider_token,
+        yandex_api_key=yandex_api_key
+
     )
 
     updater = Updater(token)
@@ -411,5 +452,8 @@ if __name__ == "__main__":
     dispatcher.add_handler(CallbackQueryHandler(partial_handle_users_reply))
     dispatcher.add_handler(MessageHandler(Filters.text, partial_handle_users_reply))
     dispatcher.add_handler(CommandHandler("start", partial_handle_users_reply))
+    dispatcher.add_handler(CallbackQueryHandler("payment", pay_for_pizza))
+    dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+    dispatcher.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
 
     updater.start_polling()
