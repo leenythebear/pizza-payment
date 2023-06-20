@@ -26,7 +26,20 @@ from elasticpath import (
 
 from geocoder import get_coordinates, get_distance
 
+import logging
+
 _database = None
+
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+
+
+def error(bot, update, error):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, error)
 
 
 def create_products_buttons(token):
@@ -456,6 +469,7 @@ if __name__ == "__main__":
     dispatcher.add_handler(CommandHandler("start", partial_handle_users_reply))
     dispatcher.add_handler(CallbackQueryHandler("payment", pay_for_pizza))
     dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
-    dispatcher.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
+
+    dispatcher.add_error_handler(error)
 
     updater.start_polling()
