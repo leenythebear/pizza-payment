@@ -305,56 +305,23 @@ def handle_waiting(bot, update, api_key, token, db):
 def handle_delivery(bot, update, token, db):
     query = update.callback_query
     customer_chat_id = query["message"]["chat"]["id"]
-    order = get_cart(token, customer_chat_id)
-    carts_sum = get_carts_sum(token, customer_chat_id)
 
     entry_ids = db.get(f'{customer_chat_id}_order').decode('utf-8')
     customer_address_id, pizzeria_id = entry_ids.split("$")
 
-    order_type = update.callback_query['data']
-
     pizzeria = get_entries_by_id(token, entry_id=pizzeria_id, flow_slug='pizzeri-aaddresses')
-
-    customer_address = get_entries_by_id(token, entry_id=customer_address_id, flow_slug='customer-address')
 
     if order_type == 'delivery':
         keyboard = [[InlineKeyboardButton('Оплатить заказ', callback_data='payment')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        bot.send_message(chat_id=customer_chat_id, text="Оплатите заказ:", reply_markup=reply_markup)
-
-        courier_telegram_id = pizzeria.get('data').get('courier-telegram-id')
-
-        longitude = customer_address.get('data').get('longitude')
-        latitude = customer_address.get('data').get('latitude')
-
-        message = ''
-        for product in order:
-            cart_description = f"""\
-                                   {product["name"]}
-                                   {product["description"]} 
-
-                                   {product["quantity"]} шт.  
-                                   Цена за штуку: {product["meta"]["display_price"]["without_tax"]["unit"]["formatted"]}
-                                   ______________________________
-                                    
-                                    """
-            message += dedent(cart_description)
-        sum_message = f"""\
-                            Итого к оплате: {carts_sum}
-                                
-                        """
-        message += dedent(sum_message)
-        db.json().set(f'{customer_chat_id}_menu', '$', {'menu': message, 'price': carts_sum})
-        bot.send_message(chat_id=courier_telegram_id, text=message)
-        bot.send_location(chat_id=courier_telegram_id, latitude=latitude, longitude=longitude)
+        bot.send_message(chat_id=customer_chat_id, text="Оплатите заказ и ожидайте доставки:", reply_markup=reply_markup)
         return "WAITING_PAYMENT"
     elif order_type == "pickup":
-        message = f"Вы можете забрать свой заказ по адресу: {pizzeria.get('data').get('address')}. До свидания!"
+        message = f"Вы можете забрать по адресу: {pizzeria.get('data').get('address')}. До свидания!"
         bot.send_message(chat_id=customer_chat_id, text=message)
 
 
-def pay_for_pizza(bot, update, provider_token, db):
-    chat_id = update.callback_query['message']['chat']['id']
+def pay_for_pizza(bot, provider_token, db, chat_id):
     title = "Payment Example"
     description = "Payment Example using python-telegram-bot"
     payload = "Custom-Payload"
@@ -379,12 +346,47 @@ def successful_payment_callback(bot, update):
     return "START"
 
 
-def handle_payment(bot, update, provider_token, db):
+def handle_payment(bot, update, provider_token, db, token):
     query = update.callback_query['data']
-    # print(777, update.callback_query)
+    chat_id = update.callback_query['message']['chat']['id']
     if query == 'payment':
-        pay_for_pizza(bot, update, provider_token, db)
-        print('it works!')
+        pay_for_pizza(bot, provider_token, db, chat_id)
+        send_message_to_courier(bot, update, db, chat_id, token)
+
+
+def send_message_to_courier(bot, update, db, chat_id, token):
+    order = get_cart(token, chat_id)
+    carts_sum = get_carts_sum(token, chat_id)
+
+    entry_ids = db.get(f'{chat_id}_order').decode('utf-8')
+    customer_address_id, pizzeria_id = entry_ids.split("$")
+
+    courier_telegram_id = (get_entries_by_id(token, entry_id=pizzeria_id, flow_slug='pizzeri-aaddresses')).get('data').get('courier-telegram-id')
+    customer_address = get_entries_by_id(token, entry_id=customer_address_id, flow_slug='customer-address')
+
+    longitude = customer_address.get('data').get('longitude')
+    latitude = customer_address.get('data').get('latitude')
+
+    message = ''
+    for product in order:
+        cart_description = f"""\
+                               {product["name"]}
+                               {product["description"]}
+
+                               {product["quantity"]} шт.
+                               Цена за штуку: {product["meta"]["display_price"]["without_tax"]["unit"]["formatted"]}
+                               ______________________________
+
+                                """
+        message += dedent(cart_description)
+    sum_message = f"""\
+                        Итого к оплате: {carts_sum}
+
+                    """
+    message += dedent(sum_message)
+    db.json().set(f'{chat_id}_menu', '$', {'menu': message, 'price': carts_sum})
+    bot.send_message(chat_id=courier_telegram_id, text=message)
+    bot.send_location(chat_id=courier_telegram_id, latitude=latitude, longitude=longitude)
 
 
 def get_database_connection(host, port, password):
