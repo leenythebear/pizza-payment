@@ -410,6 +410,9 @@ def handle_users_reply(
     elif update.message.location:
         user_reply = update.message.location
         chat_id = update.message.chat_id
+    elif update.pre_checkout_query:
+        user_reply = update.pre_checkout_query
+        chat_id = update.message.chat_id
     else:
         return
     if user_reply == "/start":
