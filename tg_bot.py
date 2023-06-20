@@ -304,6 +304,7 @@ def handle_waiting(bot, update, api_key, token, db):
 
 def handle_delivery(bot, update, token, db):
     query = update.callback_query
+    order_type = query['data']
     customer_chat_id = query["message"]["chat"]["id"]
 
     entry_ids = db.get(f'{customer_chat_id}_order').decode('utf-8')
@@ -426,7 +427,7 @@ def handle_users_reply(
         "WAITING_EMAIL": functools.partial(waiting_email, token=token),
         "WAITING_LOCATION": functools.partial(handle_waiting, api_key=yandex_api_key, token=token, db=db),
         "WAITING_PIZZA": functools.partial(handle_delivery, token=token, db=db),
-        "WAITING_PAYMENT": functools.partial(handle_payment, provider_token=provider_token, db=db)
+        "WAITING_PAYMENT": functools.partial(handle_payment, provider_token=provider_token, db=db, token=token),
     }
     state_handler = states_functions[user_state]
     try:
@@ -465,11 +466,11 @@ if __name__ == "__main__":
 
     updater = Updater(token)
     dispatcher = updater.dispatcher
+    dispatcher.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
     dispatcher.add_handler(MessageHandler(Filters.location, partial_handle_users_reply))
     dispatcher.add_handler(CallbackQueryHandler(partial_handle_users_reply))
     dispatcher.add_handler(MessageHandler(Filters.text, partial_handle_users_reply))
     dispatcher.add_handler(CommandHandler("start", partial_handle_users_reply))
-    dispatcher.add_handler(CallbackQueryHandler("payment", pay_for_pizza))
     dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
 
     dispatcher.add_error_handler(error)
