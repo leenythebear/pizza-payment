@@ -65,11 +65,11 @@ def start(bot, update, token):
     if update.callback_query:
         bot.send_message(
             chat_id=update.callback_query.message["chat"]["id"],
-            text="Please choose:",
+            text="Добро пожаловать! Выберите пиццу для заказа:",
             reply_markup=reply_markup,
         )
     elif update.message:
-        update.message.reply_text("Please choose:", reply_markup=reply_markup)
+        update.message.reply_text("Добро пожаловать! Выберите пиццу для заказа:", reply_markup=reply_markup)
     return "HANDLE_MENU"
 
 
