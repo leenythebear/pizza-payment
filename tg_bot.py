@@ -344,7 +344,16 @@ def precheckout_callback(bot, update):
 
 def successful_payment_callback(bot, update):
     update.message.reply_text("Thank you for your payment!")
-    return "START"
+
+
+def send_delivery_notification(bot, chat_id):
+    message = dedent(
+        '''
+        Приятного аппетита! *место для рекламы*\n
+        *сообщение что делать если пицца не пришла*
+        '''
+    )
+    bot.send_message(chat_id=chat_id, text=message)
 
 
 def handle_payment(bot, update, provider_token, db, token):
@@ -470,6 +479,7 @@ if __name__ == "__main__":
     )
 
     updater = Updater(token)
+    job = updater.job_queue
     dispatcher = updater.dispatcher
     dispatcher.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
     dispatcher.add_handler(MessageHandler(Filters.location, partial_handle_users_reply))
