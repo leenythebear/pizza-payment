@@ -403,28 +403,28 @@ def precheckout_callback(bot, update):
         bot.answer_pre_checkout_query(pre_checkout_query_id=query.id, ok=True)
 
 
-def successful_payment_callback(bot, update):
+def successful_payment_callback(bot, update, job_queue):
     update.message.reply_text("Thank you for your payment!")
+    job_queue.run_once(send_delivery_notification, 3600, context=update.message.chat_id)
 
 
-def send_delivery_notification(bot, chat_id):
+def send_delivery_notification(bot, job):
     message = dedent(
         """
         Приятного аппетита! *место для рекламы*\n
         *сообщение что делать если пицца не пришла*
         """
     )
-    bot.send_message(chat_id=chat_id, text=message)
+    bot.send_message(chat_id=job.context, text=message)
 
 
 def handle_payment(bot, update, provider_token, db, token):
     query = update.callback_query["data"]
     chat_id = update.callback_query["message"]["chat"]["id"]
-    if query == "payment":
-        pay_for_pizza(bot, provider_token, db, chat_id)
+    if query == 'payment':
+        pay_for_pizza(bot, update, provider_token, db, chat_id)
         send_message_to_courier(bot, update, db, chat_id, token)
         delete_all_cart_products(token, chat_id)
-        job.run_once(send_delivery_notification(bot, chat_id), 60)
 
 
 def send_message_to_courier(bot, update, db, chat_id, token):
@@ -467,13 +467,9 @@ def send_message_to_courier(bot, update, db, chat_id, token):
 
                     """
     message += dedent(sum_message)
-    db.json().set(
-        f"{chat_id}_menu", "$", {"menu": message, "price": carts_sum}
-    )
+
     bot.send_message(chat_id=courier_telegram_id, text=message)
-    bot.send_location(
-        chat_id=courier_telegram_id, latitude=latitude, longitude=longitude
-    )
+    bot.send_location(chat_id=courier_telegram_id, latitude=latitude, longitude=longitude)
 
 
 def get_database_connection(host, port, password):
@@ -567,10 +563,9 @@ if __name__ == "__main__":
     )
 
     updater = Updater(token)
-    job = updater.job_queue
     dispatcher = updater.dispatcher
     dispatcher.add_handler(
-        MessageHandler(Filters.successful_payment, successful_payment_callback)
+        MessageHandler(Filters.successful_payment, successful_payment_callback, pass_job_queue=True)
     )
     dispatcher.add_handler(
         MessageHandler(Filters.location, partial_handle_users_reply)
