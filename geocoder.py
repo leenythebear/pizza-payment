@@ -39,6 +39,9 @@ def get_coordinates(api_key, address):
 
 def get_distance(customer_coordinates, restaurant_coordinates):
     if all([*customer_coordinates, *restaurant_coordinates]):
-        distance_between = round(distance.distance(customer_coordinates, restaurant_coordinates).km, 1)
+        distance_between = round(
+            distance.distance(customer_coordinates, restaurant_coordinates).km,
+            1,
+        )
         return distance_between
     return None
