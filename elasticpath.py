@@ -1,9 +1,8 @@
 import json
-import os
+
 from slugify import slugify
 
 import redis
-from dotenv import load_dotenv
 
 import requests
 
