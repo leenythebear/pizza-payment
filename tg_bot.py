@@ -448,7 +448,7 @@ def handle_users_reply(
         next_state = state_handler(bot, update)
         db.set(chat_id, next_state)
     except Exception as err:
-        print(err)
+        logging.error(err)
 
 
 if __name__ == "__main__":
