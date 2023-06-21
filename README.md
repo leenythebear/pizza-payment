@@ -35,7 +35,7 @@ TRANZZO_PAYMENT_TOKEN=token из п. 8
 4. Добавить цены для товаров в pricebook (можно воcпользоваться функциями  ``create_currency()`` и ``add_price_for_product()`` из скрипта ``elasticpath.py``)
 5. Опубликовать каталог с товарами
 6. Создать flow c адресами пиццерий и адресами клиентов (можно воcпользоваться функциями  ``create_flow()`` и ``create_field()`` из скрипта ``elasticpath.py``)
-7. Создать пиццерии с адресами (можно воcпользоваться функцией ``add_pizzeria_address()`` из скрипта ``elasticpath.py``. Пример оформления файла с меню: ``example_addresses.json``)
+7. Создать пиццерии с адресами (можно воcпользоваться функцией ``add_pizzeria_address()`` из скрипта ``elasticpath.py``. Пример оформления файла с адресами пиццерий: ``example_addresses.json``)
 
 ## Как запустить
 - Telegram-бот запускается командой:
