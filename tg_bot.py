@@ -152,7 +152,8 @@ def handle_cart(bot, update, token):
     chat_id = query["message"]["chat"]["id"]
     if query.data == "cart":
         products_cart = get_cart(token, chat_id)
-        carts_sum = get_carts_sum(token, chat_id)
+        carts_sum, payment_sum = get_carts_sum(token, chat_id)
+
         message = ""
         for product in products_cart:
             cart_description = f"""\
@@ -201,7 +202,7 @@ def handle_cart(bot, update, token):
             show_alert=False,
         )
         products_cart = get_cart(token, chat_id)
-        carts_sum = get_carts_sum(token, chat_id)
+        carts_sum, payment_sum = get_carts_sum(token, chat_id)
         message = ""
         for product in products_cart:
             cart_description = f"""\
@@ -360,20 +361,24 @@ def handle_delivery(bot, update, token, db):
             text="Оплатите заказ и ожидайте доставки:",
             reply_markup=reply_markup,
         )
+        carts_sum, payment_sum = get_carts_sum(token, customer_chat_id)
+        db.json().set(f"{customer_chat_id}_menu", "$", {"price": payment_sum})
         return "WAITING_PAYMENT"
     elif order_type == "pickup":
         message = f"Вы можете забрать по адресу: {pizzeria.get('data').get('address')}. До свидания!"
         bot.send_message(chat_id=customer_chat_id, text=message)
 
 
-def pay_for_pizza(bot, provider_token, db, chat_id):
+def pay_for_pizza(bot, update, provider_token, db, chat_id):
     title = "Payment Example"
     description = "Payment Example using python-telegram-bot"
     payload = "Custom-Payload"
     start_parameter = "test-payment"
     currency = "RUB"
-    price = (db.json().get(f"{chat_id}_menu")["price"]).split(" ")[0]
-    prices = [LabeledPrice("Test", int(float(price)) * 100)]
+
+    price = (db.json().get(f'{chat_id}_menu')['price'])
+
+    prices = [LabeledPrice("Test", int(price))]
     bot.sendInvoice(
         chat_id,
         title,
@@ -424,7 +429,7 @@ def handle_payment(bot, update, provider_token, db, token):
 
 def send_message_to_courier(bot, update, db, chat_id, token):
     order = get_cart(token, chat_id)
-    carts_sum = get_carts_sum(token, chat_id)
+    carts_sum, payment_sum = get_carts_sum(token, chat_id)
 
     entry_ids = db.get(f"{chat_id}_order").decode("utf-8")
     customer_address_id, pizzeria_id = entry_ids.split("$")
