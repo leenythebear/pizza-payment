@@ -416,17 +416,3 @@ def delete_all_cart_products(token, chat_id):
     }
     response = requests.delete(url, headers=headers)
     response.raise_for_status()
-
-
-if __name__ == "__main__":
-    load_dotenv()
-
-    client_id = os.getenv('CLIENT_ID')
-    client_secret = os.getenv('CLIENT_SECRET')
-
-    db_host = os.environ["DATABASE_HOST"]
-    db_port = os.environ["DATABASE_PORT"]
-    db_password = os.environ["DATABASE_PASSWORD"]
-
-    db = get_database_connection(db_host, db_port, db_password)
-    token = get_token(client_id, client_secret, db)
