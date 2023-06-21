@@ -21,7 +21,7 @@ from elasticpath import (
     get_carts_sum,
     delete_product_from_cart,
     create_customer,
-    get_all_pizzerias, add_customer_address, get_entries_by_id,
+    get_all_pizzerias, add_customer_address, get_entries_by_id, delete_all_cart_products,
 )
 
 from geocoder import get_coordinates, get_distance
@@ -353,6 +353,8 @@ def handle_payment(bot, update, provider_token, db, token):
     if query == 'payment':
         pay_for_pizza(bot, provider_token, db, chat_id)
         send_message_to_courier(bot, update, db, chat_id, token)
+        delete_all_cart_products(token, chat_id)
+        job.run_once(send_delivery_notification(bot, chat_id), 60)
 
 
 def send_message_to_courier(bot, update, db, chat_id, token):
