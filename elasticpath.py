@@ -409,6 +409,15 @@ def get_entries_by_id(token, entry_id, flow_slug):
     return response.json()
 
 
+def delete_all_cart_products(token, chat_id):
+    url = f'https://useast.api.elasticpath.com/v2/carts/{chat_id}/items'
+    headers = {
+        "Authorization": "Bearer {}".format(token),
+    }
+    response = requests.delete(url, headers=headers)
+    response.raise_for_status()
+
+
 if __name__ == "__main__":
     load_dotenv()
 
