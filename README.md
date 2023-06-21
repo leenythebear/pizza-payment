@@ -41,3 +41,11 @@ TRANZZO_PAYMENT_TOKEN=token из п. 8
 - Telegram-бот запускается командой:
 
 ```python3 tg_bot.py```
+
+## Цель проекта
+
+Код написан в образовательных целях на онлайн-курсе для веб-разработчиков [dvmn.org](https://dvmn.org/).
+
+## Автор проекта
+
+Елена Иванова [Leeny_the_bear](https://github.com/leenythebear)
