@@ -134,9 +134,10 @@ def get_carts_sum(token, chat_id):
     }
     response = requests.get(carts_sum_url, headers=headers)
     response.raise_for_status()
-    return response.json()["data"]["meta"]["display_price"]["with_tax"][
-        "formatted"
-    ]
+    carts_sum = response.json()["data"]["meta"]["display_price"]["with_tax"]["formatted"]
+    payment_sum = response.json()["data"]["meta"]["display_price"]["with_tax"]["amount"]
+
+    return carts_sum, payment_sum
 
 
 def create_customer(token, email, chat_id):
