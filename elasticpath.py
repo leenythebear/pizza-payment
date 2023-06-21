@@ -252,7 +252,7 @@ def add_products(token):
         "Authorization": "Bearer {}".format(token),
         "Content-Type": "application/json",
     }
-    with open("menu.json", "r") as my_file:
+    with open("example_menu.json", "r") as my_file:
         menu_json = my_file.read()
 
     products = json.loads(menu_json)
@@ -293,7 +293,7 @@ def add_pizzeria_address(token, slug='pizzeri-aaddresses'):
         "Authorization": "Bearer {}".format(token),
         "Content-Type": "application/json",
     }
-    with open("addresses.json", "r") as my_file:
+    with open("example_addresses.json", "r") as my_file:
         addresses_json = my_file.read()
 
     addresses = json.loads(addresses_json)
